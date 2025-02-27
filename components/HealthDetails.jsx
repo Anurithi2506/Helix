@@ -33,7 +33,7 @@ const HealthDetailsScreen = () => {
         </View>
 
         {/* Blood Pressure */}
-        <View style={styles.metricCard}>
+        {/* <View style={styles.metricCard}>
           <CircularProgress
             size={120}
             width={10}
@@ -48,7 +48,7 @@ const HealthDetailsScreen = () => {
             )}
           </CircularProgress>
           <Text style={styles.metricTitle}>BLOOD PRESSURE</Text>
-        </View>
+        </View> */}
 
         {/* Oxygen Level */}
         <View style={styles.metricCard}>

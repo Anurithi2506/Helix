@@ -1,260 +1,159 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  Modal,
-} from 'react-native';
+import React, { useState, useCallback } from "react";
+import { View, ScrollView, Text, StyleSheet } from "react-native";
+import { Card, Divider } from "react-native-paper";
+import LottieView from "lottie-react-native";
+import { useFocusEffect } from "@react-navigation/native";
 
-const RecipeSuggestionScreen = () => {
-  const [recipes, setRecipes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedDiet, setSelectedDiet] = useState('All');
-  const [showFilters, setShowFilters] = useState(false);
+const RecipeScreen = () => {
+  const [recipe, setRecipe] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const API_URL = "https://fastapi-server-render.onrender.com/recipe";
 
-  const dietaryRestrictions = ['All', 'Vegetarian', 'Vegan', 'Gluten-Free', 'Keto'];
+  const fetchRecipe = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_data: {
+            extracted_health_info: {
+              patient_info: {
+                name: "John Doe",
+                age: 45,
+                gender: "Male",
+                report_date: "27-Feb-2025",
+                patient_id: "ABC12345",
+                doctor: "Dr. Smith, MD (Endocrinology)",
+              },
+              vital_signs: {
+                blood_pressure: "130/85 mmHg",
+                fasting_blood_sugar: 110,
+                post_meal_blood_sugar: 180,
+                hba1c_level: 6.5,
+                cholesterol: 200,
+                bmi: 28.0,
+              },
+              doctor_observations:
+                "The patient presents with elevated blood pressure and borderline high cholesterol, indicating early risk factors for cardiovascular disease.",
+              medication_plan: ["Metformin 500mg", "Amlodipine 5mg", "Atorvastatin 10mg"],
+              dietary_recommendations: [
+                "Reduce processed foods and sugar intake.",
+                "Increase fiber intake from vegetables and whole grains.",
+                "Engage in at least 30 minutes of exercise daily.",
+                "Monitor blood sugar and blood pressure regularly.",
+                "Reduce stress levels and ensure adequate sleep.",
+              ],
+              follow_up: {
+                next_appointment: "10-Mar-2025",
+                recommended_tests: ["Lipid Profile", "Kidney Function Test"],
+                doctor_contact: "+123 456 7890",
+              },
+            },
+          },
+        }),
+      });
 
-  // Simulate fetching recipes from an AI-driven API
-  useEffect(() => {
-    setTimeout(() => {
-      const sampleRecipes = [
-        {
-          id: '1',
-          name: 'Quinoa Salad',
-          image: 'https://i.imgur.com/5ZQ9Z1A.jpg',
-          healthRating: 4.5,
-          diet: 'Vegetarian',
-        },
-        {
-          id: '2',
-          name: 'Avocado Toast',
-          image: 'https://i.imgur.com/7QZ9Z1A.jpg',
-          healthRating: 4.0,
-          diet: 'Vegan',
-        },
-        {
-          id: '3',
-          name: 'Grilled Salmon',
-          image: 'https://i.imgur.com/8ZQ9Z1A.jpg',
-          healthRating: 4.7,
-          diet: 'Keto',
-        },
-        {
-          id: '4',
-          name: 'Chicken Stir-Fry',
-          image: 'https://i.imgur.com/9ZQ9Z1A.jpg',
-          healthRating: 4.2,
-          diet: 'Gluten-Free',
-        },
-      ];
-      setRecipes(sampleRecipes);
-      setIsLoading(false);
-    }, 2000); // Simulate a 2-second loading delay
-  }, []);
+      const data = await response.json();
+      setRecipe(data);
+    } catch (error) {
+      console.error("Error fetching recipe:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filteredRecipes =
-    selectedDiet === 'All'
-      ? recipes
-      : recipes.filter((recipe) => recipe.diet === selectedDiet);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRecipe();
+    }, [])
+  );
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Recipe Suggestions</Text>
-        <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilters(true)}>
-          <Text style={styles.filterButtonText}>Filter</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Recipe List */}
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0D69D7" />
-          <Text style={styles.loadingText}>Loading recipes...</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      {loading ? (
+        <View style={styles.animationContainer}>
+        <LottieView
+          source={require("../assets/Lottie/1.json")}
+          autoPlay
+          loop
+          style={styles.lottie}
+        />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.recipeList}>
-          {filteredRecipes.map((recipe) => (
-            <View key={recipe.id} style={styles.recipeCard}>
-              <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
-              <View style={styles.recipeDetails}>
-                <Text style={styles.recipeName}>{recipe.name}</Text>
-                <Text style={styles.recipeHealthRating}>
-                  Health Rating: {recipe.healthRating} ⭐
-                </Text>
-                <TouchableOpacity style={styles.seeRecipeButton}>
-                  <Text style={styles.seeRecipeButtonText}>See Recipe</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      )}
+        recipe && (
+          <Card style={styles.card}>
+            <Card.Title title={recipe.recipe_name} titleStyle={styles.title} />
+            <Card.Content>
+              <Text style={styles.heading}>Ingredients:</Text>
+              {recipe.ingredients.map((item, index) => (
+                <Text key={index} style={styles.text}>• {item}</Text>
+              ))}
 
-      {/* Filter Modal */}
-      <Modal visible={showFilters} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Dietary Restriction</Text>
-            {dietaryRestrictions.map((diet) => (
-              <TouchableOpacity
-                key={diet}
-                style={styles.filterItem}
-                onPress={() => {
-                  setSelectedDiet(diet);
-                  setShowFilters(false);
-                }}
-              >
-                <Text style={styles.filterItemText}>{diet}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.closeButton} onPress={() => setShowFilters(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
+              <Divider style={styles.divider} />
+
+              <Text style={styles.heading}>Calories: {recipe.calories} kcal</Text>
+              <Text style={styles.heading}>Diet Friendly: {recipe.diet_friendly}</Text>
+
+              <Divider style={styles.divider} />
+
+              <Text style={styles.heading}>Instructions:</Text>
+              <Text style={styles.text}>{recipe.instructions}</Text>
+
+              <Divider style={styles.divider} />
+
+              <Text style={styles.heading}>Health Benefits:</Text>
+              <Text style={styles.text}>{recipe.health_benefits}</Text>
+            </Card.Content>
+          </Card>
+        )
+      )}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#0D69D7',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-  },
-  headerTitle: {
-    color: '#FFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  filterButton: {
-    backgroundColor: '#FFF',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-  },
-  filterButtonText: {
-    color: '#0D69D7',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  recipeList: {
+    flexGrow: 1,
     padding: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
   },
-  recipeCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 15,
-    marginBottom: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+  lottie: {
+    width: 200,
+    height: 200,
   },
-  recipeImage: {
-    width: '100%',
-    height: 150,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-  },
-  recipeDetails: {
+  card: {
+    width: "100%",
     padding: 15,
   },
-  recipeName: {
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#2b2e36",
+  },
+  heading: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  recipeHealthRating: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 5,
-  },
-  seeRecipeButton: {
-    backgroundColor: '#0D69D7',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+    fontWeight: "bold",
     marginTop: 10,
-    alignSelf: 'flex-start',
+    color: "#2b2e36",
   },
-  seeRecipeButtonText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: 'bold',
+  text: {
+    fontSize: 16,
+    marginTop: 5,
+    color: "#555",
   },
-  modalOverlay: {
+  divider: {
+    marginVertical: 10,
+  },
+  animationContainer: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent: {
-    backgroundColor: '#FFF',
-    margin: 20,
-    padding: 20,
-    borderRadius: 15,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#0D69D7',
-    marginBottom: 10,
-  },
-  filterItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E6F3FF',
-  },
-  filterItemText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  closeButton: {
-    backgroundColor: '#0D69D7',
-    padding: 10,
-    marginTop: 10,
-    borderRadius: 10,
     alignItems: 'center',
-  },
-  closeButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    // backgroundColor: '#E6F3FF',
   },
 });
 
-export default RecipeSuggestionScreen;
+export default RecipeScreen;

@@ -34,10 +34,10 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch('https://f71d-43-250-42-50.ngrok-free.app/chat', {
+      const response = await fetch('https://fastapi-server-render.onrender.com/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: prompt }),
+        body: JSON.stringify({ user_query: prompt,user_info: "The patient is deficiemt in protein" }),
       });
 
       if (!response.ok) throw new Error('Network response was not ok.');
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+    paddingBottom:50
   },
   header: {
     backgroundColor: '#0D69D7',
@@ -210,9 +211,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: 1,
     borderColor: '#E6F3FF',
-    backgroundColor: '#FFF',
+    // backgroundColor: '#FFF',
     padding: 10,
-    elevation: 3,
+    // elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -220,14 +221,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderColor: '#E6F3FF',
+    borderColor: '#000',
     borderWidth: 1,
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 10,
     fontSize: 16,
     color: '#333',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
   },
   sendButton: {
     backgroundColor: '#0D69D7',
