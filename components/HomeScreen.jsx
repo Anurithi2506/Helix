@@ -17,6 +17,7 @@ import Lottie from 'lottie-react-native';
 import { HealthContext } from './HealthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
 const DashboardScreen = ({ navigation }) => {
   const { profileData, healthStats } = useContext(HealthContext);
 
@@ -24,6 +25,14 @@ const DashboardScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
+  const [sugarLevel, setSugarLevel] = useState('');
+  const [dietaryPlan, setDietaryPlan] = useState('');
+  const [recipe, setRecipe] = useState(null);
+  const navigationFunction = (navigateTo) => {
+    if (navigateTo !== 'bloodpressure' && navigateTo !== 'steps') {
+      navigation.navigate(navigateTo);
+    }
+  };
   // Randomly choose between two profile images
   const profileImages = [
     require('../assets/Dashboard/profile.png'),
@@ -35,7 +44,6 @@ const DashboardScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTime, setNewTaskTime] = useState(''); // Format: "HH:MM AM/PM"
-  const [showRecipe, setShowRecipe] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -54,6 +62,7 @@ const DashboardScreen = ({ navigation }) => {
       setSelectedTime(selected);
     }
   };
+
   // Add a new task
   const addTask = () => {
     if (!newTaskTitle || !selectedTime) {
@@ -87,19 +96,54 @@ const DashboardScreen = ({ navigation }) => {
     }
   };
 
-  // Navigation function to handle clicks on health stats cards
-  const navigationFunction = (navigateTo) => {
-    if (navigateTo !== 'bloodpressure' && navigateTo !== 'steps') {
-      navigation.navigate(navigateTo);
-    }
-  };
+  // Handle sugar level input and generate dietary plan
+  const handleSugarLevelInput = () => {
+    const level = parseFloat(sugarLevel);
 
-  // Sample recipe data
-  const recipe = {
-    title: 'Healthy Veggie Stir-Fry',
-    description: 'A quick and nutritious stir-fry with fresh vegetables.',
-    ingredients: ['Broccoli', 'Bell Peppers', 'Carrots', 'Soy Sauce', 'Olive Oil'],
-    steps: ['Heat oil in a pan.', 'Add veggies and stir-fry for 5-7 minutes.', 'Add soy sauce and serve.'],
+    if (isNaN(level)) {
+      Alert.alert('Invalid Input', 'Please enter a valid number for sugar level.');
+      return;
+    }
+
+    let plan = '';
+    let recipe = null;
+
+    if (level < 70) {
+      plan = 'Your sugar level is low. Consider having a snack with carbohydrates like a banana or a granola bar.';
+      recipe = {
+        title: 'Banana Smoothie',
+        description: 'A quick and energizing smoothie to boost your sugar levels.',
+        ingredients: ['1 Banana', '1 Cup Milk', '1 Tbsp Honey', '1/2 Cup Yogurt'],
+        steps: ['Blend all ingredients until smooth.', 'Serve immediately.'],
+      };
+    } else if (level >= 70 && level <= 130) {
+      plan = 'Your sugar level is normal. Maintain a balanced diet with fruits, vegetables, and whole grains.';
+      recipe = {
+        title: 'Veggie Stir-Fry',
+        description: 'A nutritious stir-fry with fresh vegetables.',
+        ingredients: ['Broccoli', 'Bell Peppers', 'Carrots', 'Soy Sauce', 'Olive Oil'],
+        steps: ['Heat oil in a pan.', 'Add veggies and stir-fry for 5-7 minutes.', 'Add soy sauce and serve.'],
+      };
+    } else if (level > 130 && level <= 180) {
+      plan = 'Your sugar level is slightly high. Opt for a low-carb meal with lean protein and vegetables.';
+      recipe = {
+        title: 'Grilled Chicken Salad',
+        description: 'A light and healthy salad with grilled chicken.',
+        ingredients: ['Chicken Breast', 'Lettuce', 'Tomatoes', 'Cucumbers', 'Olive Oil', 'Lemon Juice'],
+        steps: ['Grill the chicken breast.', 'Chop vegetables and mix with chicken.', 'Drizzle with olive oil and lemon juice.'],
+      };
+    } else {
+      plan = 'Your sugar level is high. Avoid sugary foods and consult your doctor for further advice.';
+      recipe = {
+        title: 'Steamed Vegetables',
+        description: 'A simple and healthy dish to manage sugar levels.',
+        ingredients: ['Broccoli', 'Carrots', 'Cauliflower', 'Olive Oil', 'Salt'],
+        steps: ['Steam vegetables for 5-7 minutes.', 'Drizzle with olive oil and sprinkle salt.'],
+      };
+    }
+
+    setDietaryPlan(plan);
+    setRecipe(recipe);
   };
 
   // Show Lottie animation for the first 2 seconds
@@ -151,6 +195,47 @@ const DashboardScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Sugar Level Input */}
+        <Text style={styles.sectionTitle}>Daily Sugar Level</Text>
+        <View style={styles.taskInputContainer}>
+          <TextInput
+            style={styles.taskInput}
+            placeholder="Enter Sugar Level (mg/dL)"
+            placeholderTextColor="#888"
+            keyboardType="numeric"
+            value={sugarLevel}
+            onChangeText={setSugarLevel}
+          />
+          <TouchableOpacity style={styles.addButton} onPress={handleSugarLevelInput}>
+            <Text style={styles.addButtonText}>Check Plan</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Dietary Plan */}
+        {dietaryPlan && (
+          <View style={styles.dietaryPlanContainer}>
+            <Text style={styles.sectionTitle}>Dietary Plan</Text>
+            <Text style={styles.dietaryPlanText}>{dietaryPlan}</Text>
+          </View>
+        )}
+
+        {/* Recipe Card */}
+        {recipe && (
+          <View style={styles.recipeCard}>
+            <Text style={styles.sectionTitle}>Recommended Recipe</Text>
+            <Text style={styles.recipeTitle}>{recipe.title}</Text>
+            <Text style={styles.recipeText}>{recipe.description}</Text>
+            <Text style={styles.recipeSubTitle}>Ingredients:</Text>
+            {recipe.ingredients.map((ingredient, index) => (
+              <Text key={index} style={styles.recipeText}>- {ingredient}</Text>
+            ))}
+            <Text style={styles.recipeSubTitle}>Steps:</Text>
+            {recipe.steps.map((step, index) => (
+              <Text key={index} style={styles.recipeText}>{index + 1}. {step}</Text>
+            ))}
+          </View>
+        )}
 
         {/* Upcoming Tasks (To-Do) */}
         <Text style={styles.sectionTitle}>Your Tasks</Text>
@@ -206,31 +291,6 @@ const DashboardScreen = ({ navigation }) => {
           )}
           ListEmptyComponent={<Text style={styles.emptyText}>No tasks yet. Add one above!</Text>}
         />
-
-        {/* Recipe Card */}
-        <Text style={styles.sectionTitle}>Need a Recipe?</Text>
-        <TouchableOpacity
-          style={styles.recipeCard}
-          onPress={() => navigation.navigate('recipe')}>
-          <LinearGradient colors={['#FFFFFF', '#F8FAFF']} style={styles.cardGradient}>
-            {showRecipe ? (
-              <View>
-                <Text style={styles.recipeTitle}>{recipe.title}</Text>
-                <Text style={styles.recipeText}>{recipe.description}</Text>
-                <Text style={styles.recipeSubTitle}>Ingredients:</Text>
-                {recipe.ingredients.map((ingredient, index) => (
-                  <Text key={index} style={styles.recipeText}>- {ingredient}</Text>
-                ))}
-                <Text style={styles.recipeSubTitle}>Steps:</Text>
-                {recipe.steps.map((step, index) => (
-                  <Text key={index} style={styles.recipeText}>{index + 1}. {step}</Text>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.recipePrompt}>Tap to see a healthy recipe!</Text>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
   );
@@ -428,8 +488,8 @@ const styles = StyleSheet.create({
   },
   animation: {
     width: 200,
-    height: 200,
-  },
+    height: 200,
+  },
 });
 
-export default DashboardScreen;
+export default DashboardScreen

@@ -139,7 +139,7 @@ const NutritionAnalysisScreen = () => {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.button} onPress={selectPhoto}>
-              <Text style={styles.buttonText}>🖼️ Select Photo</Text>
+              <Text style={styles.buttonText}>🖼 Select Photo</Text>
             </TouchableOpacity>
           </View>
 
@@ -246,7 +246,7 @@ const NutritionAnalysisScreen = () => {
                                     styles.sectionHeader,
                                     styles.warningHeader,
                                   ]}>
-                                  ⚠️ Health Warnings
+                                  ⚠ Health Warnings
                                 </Text>
                                 <View style={styles.warningList}>
                                   {parsedData.health_warnings.map(
