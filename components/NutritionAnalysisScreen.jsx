@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
@@ -54,14 +55,55 @@ const NutritionAnalysisScreen = () => {
     }
   };
 
-  const takePhoto = () => {
-    launchCamera({mediaType: 'photo', quality: 0.8}, response => {
-      if (!response.didCancel && !response.errorCode) {
-        setSelectedImage(response.assets[0]);
-        handleImageUpload(response.assets[0]);
+  const takePhoto = async () => {
+    try {
+      const hasPermission = await requestCameraPermission();
+      if (!hasPermission) {
+        Alert.alert('Permission required', 'Camera permission was denied');
+        return;
       }
-    });
+
+      launchCamera(
+        {
+          mediaType: 'photo',
+          quality: 0.8,
+          saveToPhotos: true,
+          cameraType: 'back',
+        },
+        response => {
+          if (response.errorCode) {
+            Alert.alert('Camera Error', response.errorMessage);
+          } else if (!response.didCancel) {
+            setSelectedImage(response.assets[0]);
+            handleImageUpload(response.assets[0]);
+          }
+        },
+      );
+    } catch (err) {
+      Alert.alert('Camera Error', err.message);
+      console.error(err);
+    }
   };
+
+  const requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message: 'App needs access to your camera',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+
 
   const selectPhoto = () => {
     launchImageLibrary({mediaType: 'photo', quality: 0.8}, response => {
@@ -97,7 +139,7 @@ const NutritionAnalysisScreen = () => {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.button} onPress={selectPhoto}>
-              <Text style={styles.buttonText}>🖼️ Select Photo</Text>
+              <Text style={styles.buttonText}>🖼 Select Photo</Text>
             </TouchableOpacity>
           </View>
 
@@ -204,7 +246,7 @@ const NutritionAnalysisScreen = () => {
                                     styles.sectionHeader,
                                     styles.warningHeader,
                                   ]}>
-                                  ⚠️ Health Warnings
+                                  ⚠ Health Warnings
                                 </Text>
                                 <View style={styles.warningList}>
                                   {parsedData.health_warnings.map(
@@ -472,6 +514,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 6,
   },
+  warningText:{
+    color:'#FF4060'
+  }
 });
 
 export default NutritionAnalysisScreen;
