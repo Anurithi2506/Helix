@@ -118,11 +118,11 @@ const BottomTab = () => {
     >
       <Tab.Screen name="Home" component={DashboardScreen} />
       <Tab.Screen name="meds" component={MedicationReminderScreen} />
-       {/* <Tab.Screen 
+       <Tab.Screen 
         name="Nutrition" 
         component={NutritionAnalysisScreen} 
         
-      />  */}
+      /> 
       <Tab.Screen name="chatbot" component={Chatbot} />
       <Tab.Screen name="Profile" component={HealthProfileScreen} />
     </Tab.Navigator>

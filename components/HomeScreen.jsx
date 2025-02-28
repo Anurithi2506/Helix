@@ -28,11 +28,13 @@ const DashboardScreen = ({ navigation }) => {
   const [sugarLevel, setSugarLevel] = useState('');
   const [dietaryPlan, setDietaryPlan] = useState('');
   const [recipe, setRecipe] = useState(null);
+
   const navigationFunction = (navigateTo) => {
     if (navigateTo !== 'bloodpressure' && navigateTo !== 'steps') {
       navigation.navigate(navigateTo);
-    }
-  };
+    }
+  };
+
   // Randomly choose between two profile images
   const profileImages = [
     require('../assets/Dashboard/profile.png'),
@@ -146,7 +148,6 @@ const DashboardScreen = ({ navigation }) => {
     setRecipe(recipe);
   };
 
-  // Show Lottie animation for the first 2 seconds
   if (isLoading) {
     return (
       <View style={styles.animationContainer}>
@@ -197,7 +198,7 @@ const DashboardScreen = ({ navigation }) => {
         </View>
 
         {/* Sugar Level Input */}
-        <Text style={styles.sectionTitle}>Daily Sugar Level</Text>
+        {/* <Text style={styles.sectionTitle}>Daily Sugar Level</Text>
         <View style={styles.taskInputContainer}>
           <TextInput
             style={styles.taskInput}
@@ -210,7 +211,7 @@ const DashboardScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.addButton} onPress={handleSugarLevelInput}>
             <Text style={styles.addButtonText}>Check Plan</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Dietary Plan */}
         {dietaryPlan && (
@@ -291,6 +292,19 @@ const DashboardScreen = ({ navigation }) => {
           )}
           ListEmptyComponent={<Text style={styles.emptyText}>No tasks yet. Add one above!</Text>}
         />
+
+        {/* Recipe Suggester Card */}
+        <TouchableOpacity
+          style={styles.recipeSuggesterCard}
+          onPress={() => navigation.navigate('recipe')}>
+          <LinearGradient colors={['#0D69D7', '#1C8EF9']} style={styles.recipeSuggesterGradient}>
+            <Text style={styles.recipeSuggesterText}>Get Personalized Diet Charts</Text>
+            <Image
+              source={require('../assets/nutrition.png')} // Replace with your icon
+              style={styles.recipeSuggesterIcon}
+            />
+          </LinearGradient>
+        </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
   );
@@ -488,8 +502,34 @@ const styles = StyleSheet.create({
   },
   animation: {
     width: 200,
-    height: 200,
-  },
+    height: 200,
+  },
+  
+  recipeSuggesterCard: {
+    width: '100%',
+    height: 120,
+    borderRadius: 16,
+    elevation: 3,
+    marginTop: 20,
+  },
+  recipeSuggesterGradient: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  recipeSuggesterText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  recipeSuggesterIcon: {
+    width: 40,
+    height: 40,
+    tintColor: '#FFF',
+  },
 });
 
-export default DashboardScreen
+export default DashboardScreen;

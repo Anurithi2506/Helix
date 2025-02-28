@@ -34,7 +34,7 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch('https://fastapi-server-render.onrender.com/chatbot', {
+      const response = await fetch('http://192.168.243.154:8000/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_query: prompt,user_info: "The patient is deficiemt in protein" }),

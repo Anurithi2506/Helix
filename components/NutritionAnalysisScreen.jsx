@@ -32,7 +32,7 @@ const NutritionAnalysisScreen = () => {
 
     try {
       const response = await fetch(
-        'https://fastapi-server-render.onrender.com/nutrition',
+        'http://192.168.243.154:8000/nutrition',
         {
           method: 'POST',
           body: formData,
